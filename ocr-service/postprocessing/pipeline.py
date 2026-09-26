@@ -1,0 +1,143 @@
+from postprocessing.adapter import paddleocr_to_blocks
+from postprocessing.noise_filter import clean_blocks
+from postprocessing.reading_order import reconstruct_reading_order
+from postprocessing.question_detection import segment_questions
+
+
+def process_page(
+    ocr_result,
+    page_number=1,
+    clean_noise=True,
+    image=None,
+    line_recognizer=None,
+):
+    """
+    Process a single page's OCR result through the full post-processing pipeline.
+    
+    Args:
+        ocr_result: Raw PaddleOCR result (list containing one page dict)
+        page_number: Page number for reference
+        clean_noise: Whether to filter noisy OCR blocks
+    
+    Returns:
+        dict: {
+            'qa_pairs': [...],
+            'lines': [...],
+            'blocks': [...],
+            'page_number': page_number
+        }
+    """
+    # Convert to blocks
+    blocks = paddleocr_to_blocks(
+        ocr_result,
+        page_number,
+        image=image,
+        line_recognizer=line_recognizer,
+    )
+    
+    # Clean noise (optional)
+    if clean_noise:
+        blocks = clean_blocks(blocks)
+    
+    # Reconstruct reading order
+    lines = reconstruct_reading_order(blocks)
+    print(f"[postprocess][page={page_number}] blocks={len(blocks)} reconstructed_lines={len(lines)}")
+    for line_index, line in enumerate(lines, start=1):
+        print(f"[postprocess][page={page_number}][line={line_index}] {' '.join(block['text'] for block in line)}")
+    
+    # Extract questions and answers
+    qa_pairs = segment_questions(lines)
+    for qa_pair in qa_pairs:
+        qa_pair['page'] = page_number
+    print(f"[postprocess][page={page_number}] question_answer_pairs={len(qa_pairs)}")
+    for qa_pair in qa_pairs:
+        print(f"[postprocess][page={page_number}][Q{qa_pair['question_number']}] question={qa_pair['question_text']!r} answer={qa_pair['answer_text']!r}")
+    
+    return {
+        'qa_pairs': qa_pairs,
+        'lines': lines,
+        'blocks': blocks,
+        'page_number': page_number
+    }
+
+
+def process_submission(
+    ocr_results,
+    submission_id="SUB123",
+    clean_noise=True,
+    page_images=None,
+    line_recognizer=None,
+):
+    """
+    Process multiple pages of a submission.
+    
+    Args:
+        ocr_results: List of PaddleOCR results (one per page)
+        submission_id: Submission identifier
+        clean_noise: Whether to filter noisy OCR blocks
+    
+    Returns:
+        dict: Complete structured output with answers from all pages
+    """
+    all_pages = []
+    all_qa_pairs = []
+    
+    page_images = page_images or []
+
+    for page_num, ocr_result in enumerate(ocr_results, start=1):
+        image = page_images[page_num - 1] if page_num <= len(page_images) else None
+        page_result = process_page(
+            ocr_result,
+            page_num,
+            clean_noise,
+            image=image,
+            line_recognizer=line_recognizer,
+        )
+        all_pages.append(page_result)
+        all_qa_pairs.extend(page_result['qa_pairs'])
+    
+    # TODO: Add multi-page merging here when implemented
+    
+    return {
+        'submissionId': submission_id,
+        'pages': all_pages,
+        'ocrConfidence': _submission_confidence(all_pages),
+        'answers': [
+            {
+                'questionNumber': qa['question_number'],
+                'questionText': qa['question_text'],
+                'answerText': qa['answer_text'],
+                'ocrConfidence': _answer_confidence(qa, all_pages),
+                'lineRange': qa['line_range'],
+                'page': qa.get('page', 1)
+            }
+            for qa in all_qa_pairs
+        ]
+    }
+
+
+def _answer_confidence(qa, pages):
+    page_index = qa.get('page', 1) - 1
+    if page_index < 0 or page_index >= len(pages):
+        return 0
+
+    lines = pages[page_index].get('lines', [])
+    start = qa['line_range']['start']
+    end = qa['line_range']['end']
+    blocks = [block for line in lines[start:end + 1] for block in line]
+    if not blocks:
+        return 0
+
+    return round(sum(block['confidence'] for block in blocks) / len(blocks) * 100)
+
+
+def _submission_confidence(pages):
+    blocks = [
+        block
+        for page in pages
+        for block in page.get('blocks', [])
+    ]
+    if not blocks:
+        return 0
+
+    return round(sum(block['confidence'] for block in blocks) / len(blocks) * 100)
