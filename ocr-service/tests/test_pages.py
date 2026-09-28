@@ -4,7 +4,7 @@ from app.preprocessing.pages import extract_pdf_pages
 
 
 # ---------------------------------------------------------
-# Test input
+# Test Input
 # ---------------------------------------------------------
 # The sample PDF lives outside the application code.
 # This test simply feeds it into our page extraction
