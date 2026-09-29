@@ -10,7 +10,7 @@ def is_likely_noise(text, confidence):
     """
     text = text.strip()
     
-    # Always filter very low confidence blocks
+    # Always filter with very low confidence
     if confidence < 0.3:
         return True
     
