@@ -1,59 +1,117 @@
-# EvalX
+<div align="center">
 
-EvalX is an automated examination evaluation platform for handwritten answer sheets. Teachers create examinations, upload student answer-sheet PDFs, and review AI-generated scores and feedback. Students can view their published results and performance statistics.
-
-## Features
-
-- Teacher examination creation with questions, reference answers, and marks
-- PDF answer-sheet upload
-- PDF page extraction and image preprocessing
-- PaddleOCR text detection and recognition
-- TrOCR handwritten line recognition
-- OCR confidence measurement
-- Qwen-based answer evaluation
-- Correctness, completeness, relevance, marks, and feedback
-- Teacher review, score overrides, publishing, retry, and deletion
-- Student result portal with exam percentage graph
-- Admin dashboard for teacher and student account management
-- Role-based authentication and authorization
-
-## Architecture
-
-```text
-Frontend (React + Vite)
-        |
-        | HTTP / JSON / multipart PDF
-        v
-Backend (Node.js + Express)
-        |
-        |-- MongoDB: exams, questions, submissions, answers, evaluations
-        |-- OCR service: PDF preprocessing, PaddleOCR, TrOCR
-        `-- Qwen service: semantic answer evaluation
+```
+ ███████╗██╗   ██╗ █████╗ ██╗     ██╗  ██╗
+ ██╔════╝██║   ██║██╔══██╗██║     ╚██╗██╔╝
+ █████╗  ██║   ██║███████║██║      ╚███╔╝
+ ██╔══╝  ╚██╗ ██╔╝██╔══██║██║      ██╔██╗
+ ███████╗ ╚████╔╝ ██║  ██║███████╗██╔╝ ██╗
+ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 ```
 
-### Services
+### ✒️ Read the ink. Grade the thought.
+
+**EvalX turns stacks of handwritten answer sheets into reviewed, explainable scores, in minutes instead of days.**
+
+<br/>
+
+![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Node](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Services-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PaddleOCR](https://img.shields.io/badge/PaddleOCR-Detection-0062FF?style=for-the-badge)
+![TrOCR](https://img.shields.io/badge/TrOCR-Handwriting-FF6F00?style=for-the-badge)
+![Qwen](https://img.shields.io/badge/Qwen-Evaluation-6B4FBB?style=for-the-badge)
+
+[**The Idea**](#-the-idea) · [**How It Thinks**](#-how-it-thinks) · [**Architecture**](#-architecture) · [**Quick Start**](#-quick-start) · [**API**](#-api-reference) · [**Roadmap**](#-honest-limitations--roadmap)
+
+</div>
+
+---
+
+## 💡 The Idea
+
+Grading handwritten exams is slow, repetitive, and inconsistent. EvalX handles the heavy lifting and keeps the teacher in charge:
+
+> 📄 **Upload a PDF** → 👁️ **Machines read the handwriting** → 🧠 **An LLM judges meaning, not keywords** → 👩‍🏫 **The teacher reviews, overrides, and publishes** → 🎓 **Students see their results**
+
+| Who | What they get |
+|---|---|
+| 👩‍🏫 **Teachers** | Create exams, upload answer sheets, review AI scores and feedback, override marks, publish, retry, delete |
+| 🎓 **Students** | A private portal with published results and an exam percentage graph |
+| 🛡️ **Admins** | Teacher and student account management plus dashboard statistics |
+
+---
+
+## ✨ Feature Highlights
+
+- 📝 **Exam builder**: questions, reference answers, and marks per question
+- 📑 **PDF answer-sheet upload** with page extraction and image preprocessing
+- 🔍 **Dual-engine OCR**: PaddleOCR finds and reads text, TrOCR handles handwritten lines
+- 📊 **OCR confidence scoring** at answer level and submission level
+- 🧠 **Qwen-powered semantic grading**: correctness, completeness, relevance, marks, written feedback
+- ✏️ **Human in the loop**: score overrides, publishing, retry, deletion
+- 📈 **Student result portal** with a performance graph
+- 🔐 **Role-based auth** for admin, teacher, and student
+
+---
+
+## 🧬 How It Thinks
+
+```mermaid
+flowchart LR
+    A[📄 Answer-sheet PDF] --> B[🖼️ Page extraction<br/>+ preprocessing]
+    B --> C[🔎 PaddleOCR<br/>detect + confidence]
+    C --> D[✍️ TrOCR<br/>handwritten lines]
+    D --> E[✂️ Question<br/>segmentation]
+    E --> F[🧠 Qwen<br/>semantic evaluation]
+    F --> G[👩‍🏫 Teacher review]
+    G --> H[🎓 Published result]
+```
+
+Each answer is scored on three axes before marks are computed:
+
+| Signal | Meaning |
+|---|---|
+| **Correctness** | Is what the student wrote actually right? |
+| **Completeness** | Did they cover everything the reference answer expects? |
+| **Relevance** | Did they stay on the question? |
+
+> 💬 OCR confidence (how well the machine *read* the handwriting) is deliberately kept separate from Qwen's evaluation (how well the student *answered*), so a messy scrawl never gets confused with a wrong answer.
+
+---
+
+## 🏗️ Architecture
+
+```text
+┌──────────────────────────┐
+│  Frontend (React + Vite) │
+└────────────┬─────────────┘
+             │  HTTP / JSON / multipart PDF
+             ▼
+┌──────────────────────────┐
+│ Backend (Node + Express) │──────────▶  🗄️ MongoDB
+│  REST API + coordinator  │             exams · questions · submissions
+└──────┬──────────────┬────┘             answers · evaluations
+       │              │
+       ▼              ▼
+┌─────────────┐  ┌─────────────┐
+│ 👁️ OCR      │  │ 🧠 Qwen     │
+│ PaddleOCR   │  │ semantic    │
+│ + TrOCR     │  │ evaluation  │
+└─────────────┘  └─────────────┘
+```
 
 | Service | Directory | Default URL | Purpose |
 |---|---|---:|---|
-| Frontend | `frontend/` | `http://localhost:5173` | React web application |
-| Backend | `backend/` | `http://localhost:5000` | REST API and evaluation coordinator |
-| OCR | `ocr-service/` | `http://localhost:8001` | PDF preprocessing and OCR |
-| Qwen | `qwen-service/` | `http://localhost:8002` | AI answer evaluation |
-| MongoDB | Local or remote | `mongodb://127.0.0.1:27017` | Persistent application data |
+| 🖥️ Frontend | `frontend/` | `http://localhost:5173` | React web application |
+| ⚙️ Backend | `backend/` | `http://localhost:5000` | REST API and evaluation coordinator |
+| 👁️ OCR | `ocr-service/` | `http://localhost:8001` | PDF preprocessing and OCR |
+| 🧠 Qwen | `qwen-service/` | `http://localhost:8002` | AI answer evaluation |
+| 🗄️ MongoDB | Local or remote | `mongodb://127.0.0.1:27017` | Persistent application data |
 
-## Requirements
-
-- Windows, macOS, or Linux
-- Node.js 18 or newer
-- npm
-- Python 3.10 or newer
-- MongoDB running locally or a reachable MongoDB instance
-- Enough disk space for PaddleOCR, TrOCR, and Qwen model files
-- Optional NVIDIA GPU and compatible CUDA/PyTorch installation
-
-The first model run may download or initialize large model files. CPU inference can take considerably longer than GPU inference.
-
-## Project Structure
+<details>
+<summary><b>📁 Project structure</b></summary>
 
 ```text
 backend/
@@ -91,9 +149,27 @@ qwen-service/
   tests/             Evaluation tests
 ```
 
-## Installation
+</details>
 
-### 1. Start MongoDB
+---
+
+## 🚀 Quick Start
+
+### 🧰 You'll need
+
+- Windows, macOS, or Linux
+- Node.js 18+ and npm
+- Python 3.10+
+- MongoDB (local or remote)
+- Disk space for PaddleOCR, TrOCR, and Qwen model files
+- *Optional:* NVIDIA GPU with CUDA/PyTorch
+
+> ⏳ The first run may download or initialize large model files. CPU inference works but is considerably slower than GPU.
+
+### 🪜 Setup in 6 steps
+
+<details open>
+<summary><b>1️⃣ Start MongoDB</b></summary>
 
 Start MongoDB using the method appropriate for your installation. The default connection is:
 
@@ -101,7 +177,10 @@ Start MongoDB using the method appropriate for your installation. The default co
 mongodb://127.0.0.1:27017/sih-evaluation
 ```
 
-### 2. Configure the backend
+</details>
+
+<details>
+<summary><b>2️⃣ Configure the backend</b></summary>
 
 Create `backend/.env` from `backend/.env.example`:
 
@@ -119,16 +198,22 @@ TEACHER_ID=TCH001
 TEACHER_PASSWORD=demo123
 ```
 
-Use a long random value for `AUTH_SECRET` outside local development.
+> 🔑 Use a long random value for `AUTH_SECRET` outside local development.
 
-### 3. Install backend dependencies
+</details>
+
+<details>
+<summary><b>3️⃣ Install backend dependencies</b></summary>
 
 ```powershell
 cd backend
 npm install
 ```
 
-### 4. Configure the frontend
+</details>
+
+<details>
+<summary><b>4️⃣ Configure and install the frontend</b></summary>
 
 Create `frontend/.env` from `frontend/.env.example`:
 
@@ -136,14 +221,15 @@ Create `frontend/.env` from `frontend/.env.example`:
 VITE_API_URL=http://localhost:5000/api
 ```
 
-Install dependencies:
-
 ```powershell
 cd frontend
 npm install
 ```
 
-### 5. Set up the OCR service
+</details>
+
+<details>
+<summary><b>5️⃣ Set up the OCR service</b></summary>
 
 ```powershell
 cd ocr-service
@@ -158,7 +244,10 @@ If PowerShell blocks activation, run the service with the virtual-environment ex
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8001
 ```
 
-### 6. Set up the Qwen service
+</details>
+
+<details>
+<summary><b>6️⃣ Set up the Qwen service</b></summary>
 
 ```powershell
 cd qwen-service
@@ -169,89 +258,53 @@ pip install -r requirements.txt
 
 The Qwen service requires the model files under `qwen-service/models/`. If the model is not present, configure or download the model according to `qwen-service/app/model.py`.
 
-## Running the Application
+</details>
 
-Run each service in a separate terminal.
+### ▶️ Launch everything
 
-### OCR service
+Run each service in its own terminal.
 
-```powershell
-cd ocr-service
-.\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --host 0.0.0.0 --port 8001
-```
+| # | Service | Commands | Health check |
+|:-:|---|---|---|
+| 1 | 👁️ **OCR** | `cd ocr-service`<br/>`.\.venv\Scripts\Activate.ps1`<br/>`uvicorn app.main:app --host 0.0.0.0 --port 8001` | `http://localhost:8001/health` |
+| 2 | 🧠 **Qwen** | `cd qwen-service`<br/>`.\.venv\Scripts\Activate.ps1`<br/>`uvicorn app.main:app --host 0.0.0.0 --port 8002` | `http://localhost:8002/health` |
+| 3 | ⚙️ **Backend** | `cd backend`<br/>`npm start` (or `npm run dev` for auto-restart) | `http://localhost:5000/api/health` |
+| 4 | 🖥️ **Frontend** | `cd frontend`<br/>`npm run dev` | Open `http://localhost:5173` |
 
-Health check:
+---
 
-```text
-http://localhost:8001/health
-```
+## 🔑 Demo Credentials
 
-### Qwen service
+| Role | Login | Password |
+|---|---|---|
+| 👩‍🏫 Teacher | `TCH001` | `demo123` |
+| 🛡️ Admin | `admin` | `admin123` |
+| 🎓 Student | Registered roll number (e.g. `2024CSE1021`) | none, roll-based |
 
-```powershell
-cd qwen-service
-.\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --host 0.0.0.0 --port 8002
-```
+> The admin login uses an admin record stored in MongoDB, so the seed script or existing database setup must create the account. Student accounts are created from the admin portal.
+>
+> ⚠️ **Change all demo credentials before deployment.**
 
-Health check:
+---
 
-```text
-http://localhost:8002/health
-```
-
-### Backend
-
-```powershell
-cd backend
-npm start
-```
-
-Health check:
+## 🗺️ The Main Workflow
 
 ```text
-http://localhost:5000/api/health
+ 🛡️ ADMIN                 👩‍🏫 TEACHER                          🎓 STUDENT
+    │                          │                                  │
+    ├─ create teacher &        │                                  │
+    │  student accounts        │                                  │
+    │                          ├─ create exam                     │
+    │                          │  (questions + answers + marks)   │
+    │                          ├─ upload PDF for a student        │
+    │                          │        │                         │
+    │                          │        ▼                         │
+    │                          │   OCR ▸ Qwen evaluation          │
+    │                          │        │                         │
+    │                          ├─ review / edit marks             │
+    │                          ├─ publish ───────────────────────▶├─ view result
+    │                          │                                  │  + performance graph
 ```
-
-For development with automatic restart:
-
-```powershell
-npm run dev
-```
-
-### Frontend
-
-```powershell
-cd frontend
-npm run dev
-```
-
-Open the URL printed by Vite, normally:
-
-```text
-http://localhost:5173
-```
-
-## Demo Credentials
-
-The default local teacher login is:
-
-```text
-Teacher ID: TCH001
-Password: demo123
-```
-
-The admin login uses an admin record stored in MongoDB. The seed script or existing database setup must create the admin account. The default demo credentials used by the frontend are:
-
-```text
-Username: admin
-Password: admin123
-```
-
-Students log in with a registered roll number. Student accounts can be created from the admin portal.
-
-## Main Workflow
 
 1. Log in as an admin and create teacher and student accounts.
 2. Log in as a teacher.
@@ -267,14 +320,22 @@ Students log in with a registered roll number. Student accounts can be created f
 12. The teacher publishes the result.
 13. The student logs in and views the published result and exam performance graph.
 
-## API Overview
+---
 
-All backend API routes are prefixed with `/api`.
+## 📡 API Reference
 
-### Authentication
+All backend routes are prefixed with `/api`. Authenticated requests use:
+
+```http
+Authorization: Bearer <token>
+```
+
+<details>
+<summary><b>🔐 Authentication</b></summary>
 
 ```http
 POST /api/auth/login
+POST /api/admin/login
 ```
 
 Teacher request:
@@ -296,19 +357,10 @@ Student request:
 }
 ```
 
-Admin login:
+</details>
 
-```http
-POST /api/admin/login
-```
-
-Authenticated requests use:
-
-```http
-Authorization: Bearer <token>
-```
-
-### Exams
+<details>
+<summary><b>📝 Exams</b></summary>
 
 ```http
 GET    /api/exams
@@ -333,7 +385,10 @@ Create-exam request:
 }
 ```
 
-### Submissions
+</details>
+
+<details>
+<summary><b>📄 Submissions</b></summary>
 
 ```http
 POST   /api/submissions
@@ -345,33 +400,33 @@ PATCH  /api/submissions/:id/publish
 PATCH  /api/submissions/:submissionId/score
 ```
 
-Upload a submission as multipart form data with:
-
-```text
-examId
-studentRoll
-file
-```
+Upload as multipart form data with `examId`, `studentRoll`, and `file`.
 
 Retry is available for failed or completed submissions. It clears previous answer/evaluation records and reruns OCR and AI evaluation.
 
-### Results
+</details>
+
+<details>
+<summary><b>🎓 Results</b></summary>
 
 ```http
 GET /api/results/:submissionId
 GET /api/results/student/:roll
 ```
 
-Student result access is restricted to the authenticated student’s own roll number.
+Student result access is restricted to the authenticated student's own roll number.
 
-### OCR service
+</details>
+
+<details>
+<summary><b>👁️ OCR service</b></summary>
 
 ```http
 GET  /health
 POST /api/ocr
 ```
 
-The OCR response includes answer-level and submission-level OCR confidence:
+The response includes answer-level and submission-level OCR confidence:
 
 ```json
 {
@@ -390,9 +445,12 @@ The OCR response includes answer-level and submission-level OCR confidence:
 }
 ```
 
-OCR confidence is derived from PaddleOCR recognition scores. It is separate from Qwen’s semantic evaluation and marks.
+OCR confidence is derived from PaddleOCR recognition scores. It is separate from Qwen's semantic evaluation and marks.
 
-### Qwen service
+</details>
+
+<details>
+<summary><b>🧠 Qwen service</b></summary>
 
 ```http
 GET  /health
@@ -400,7 +458,7 @@ POST /evaluate
 POST /api/evaluate
 ```
 
-Qwen request:
+Request:
 
 ```json
 {
@@ -411,7 +469,7 @@ Qwen request:
 }
 ```
 
-Qwen response:
+Response:
 
 ```json
 {
@@ -423,73 +481,86 @@ Qwen response:
 }
 ```
 
-## Authorization Rules
+</details>
 
-- Unauthenticated users cannot access portals or protected API routes.
-- Teachers can create exams, upload submissions, review scores, publish results, retry submissions, and delete exams/submissions.
-- Admins can manage teacher/student accounts and read dashboard exam/submission statistics.
-- Students can view only their own published results.
-- Exam deletion cascades to its questions, submissions, answers, evaluations, and uploaded files.
+---
 
-## Testing and Validation
+## 🛂 Authorization Rules
 
-### Frontend build
+| Role | Can do |
+|---|---|
+| 🚫 **Anonymous** | Nothing: portals and protected API routes require login |
+| 👩‍🏫 **Teacher** | Create exams, upload submissions, review scores, publish, retry, delete exams and submissions |
+| 🛡️ **Admin** | Manage teacher/student accounts, read dashboard exam and submission statistics |
+| 🎓 **Student** | View only their own *published* results |
+
+> 🗑️ Deleting an exam cascades to its questions, submissions, answers, evaluations, and uploaded files.
+
+---
+
+## 🧪 Testing & Validation
 
 ```powershell
+# Frontend build
 cd frontend
 npm run build
-```
 
-### Backend syntax checks
-
-```powershell
+# Backend syntax checks
 cd backend
 node --check src/server.js
 node --check src/services/ocr.service.js
 node --check src/services/qwen.service.js
-```
 
-### OCR tests
+# OCR tests (from ocr-service)
+python -m pytest tests
 
-From `ocr-service`:
-
-```powershell
+# Qwen tests (from qwen-service)
 python -m pytest tests
 ```
 
-Some files under `tests/` are executable scripts rather than pytest test modules. They can also be run directly when appropriate:
+Some files under `ocr-service/tests/` are executable scripts rather than pytest modules. Run them directly when appropriate:
 
 ```powershell
 python -m tests.test_pipeline
 python -m tests.test_ocr
 ```
 
-### Qwen tests
+---
 
-From `qwen-service`:
+## 🔒 Security Notes
 
-```powershell
-python -m pytest tests
-```
+- [ ] Change demo credentials before deployment
+- [ ] Use a strong random `AUTH_SECRET`
+- [ ] Never commit `.env` files or credentials
+- [ ] Hash passwords before using this outside a demo (local accounts currently store them directly for simplicity)
+- [ ] Restrict CORS to the deployed frontend origin
+- [ ] Add rate limiting and file scanning before exposing uploads publicly
 
-## Security Notes
+---
 
-- Change demo credentials before deployment.
-- Use a strong random `AUTH_SECRET`.
-- Do not commit `.env` files or credentials.
-- Store passwords hashed before using this system outside a demo environment. The current local account implementation stores passwords directly for simplicity.
-- Restrict CORS to the deployed frontend origin.
-- Add request rate limiting and file scanning before exposing upload endpoints publicly.
+## 🧭 Honest Limitations & Roadmap
 
-## Current Limitations
+What EvalX doesn't do *yet*, stated plainly:
 
-- Student login is roll-based rather than password-based.
-- Teacher credentials are configured through environment variables unless managed by the admin account flow.
-- OCR question segmentation depends on recognizable question markers such as `Q1`, `1.`, or `Question 1`.
-- TrOCR model inference can be slow on CPU.
-- Background evaluation currently runs inside the backend process rather than a separate job queue.
-- The frontend build may print a Vite dynamic-import chunk warning for the shared API module; it does not prevent the build from succeeding.
+| Limitation | Natural next step |
+|---|---|
+| Student login is roll-based, not password-based | Add password or OTP authentication |
+| Teacher credentials come from env vars unless managed via the admin flow | Move fully to admin-managed accounts |
+| Question segmentation relies on markers like `Q1`, `1.`, or `Question 1` | Layout-aware or model-based segmentation |
+| TrOCR is slow on CPU | GPU deployment or model optimization |
+| Background evaluation runs inside the backend process | Move to a dedicated job queue |
+| Vite may print a dynamic-import chunk warning for the shared API module | Harmless, since the build still succeeds; tidy up imports |
 
-## License
+---
 
-This project is intended for hackathon and educational use. Add the appropriate project license before distributing it publicly.
+## 📜 License
+
+EvalX is intended for hackathon and educational use. Add the appropriate project license before distributing it publicly.
+
+<div align="center">
+
+<br/>
+
+**Built to give teachers their evenings back.** ✒️
+
+</div>
