@@ -25,7 +25,7 @@
 
 [**The Idea**](#-the-idea) · [**How It Thinks**](#-how-it-thinks) · [**Architecture**](#-architecture) · [**Quick Start**](#-quick-start) · [**API**](#-api-reference) · [**Roadmap**](#-honest-limitations--roadmap)
 
-</div>
+
 
 ---
 
