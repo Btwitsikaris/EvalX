@@ -14,7 +14,7 @@
 **EvalX turns stacks of handwritten answer sheets into reviewed, explainable scores, in minutes instead of days.**
 
 <br/>
-<div align="center>
+<div align="center">
 
 ![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Node](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
