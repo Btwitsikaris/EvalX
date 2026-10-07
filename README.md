@@ -1,4 +1,4 @@
-<div ><p align="center">
+<p align="center">
   <img src="assets/evalx-banner.svg" alt="EvalX: Read the ink. Grade the thought." width="100%">
 </p>
 
