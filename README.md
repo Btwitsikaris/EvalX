@@ -1,15 +1,15 @@
-<div align="center">
+<p align="center">
+  <img src="assets/evalx-banner.svg" alt="EvalX: Read the ink. Grade the thought." width="100%">
+</p>
 
-```
- ███████╗██╗   ██╗ █████╗ ██╗     ██╗  ██╗
- ██╔════╝██║   ██║██╔══██╗██║     ╚██╗██╔╝
- █████╗  ██║   ██║███████║██║      ╚███╔╝
- ██╔══╝  ╚██╗ ██╔╝██╔══██║██║      ██╔██╗
- ███████╗ ╚████╔╝ ██║  ██║███████╗██╔╝ ██╗
- ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-```
-
-### ✒️ Read the ink. Grade the thought.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/Node-Express-339933?logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/PaddleOCR-TrOCR-2932E1" />
+  <img src="https://img.shields.io/badge/Qwen-LLM-6C47FF" />
+</p>
 
 **EvalX turns stacks of handwritten answer sheets into reviewed, explainable scores, in minutes instead of days.**
 
