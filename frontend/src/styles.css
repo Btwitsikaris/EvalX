@@ -794,3 +794,9 @@ body { transition: background .3s ease, color .3s ease; }
   .siteFooter .footerContact { min-width: 0; }
   .siteFooter .footerBottom { flex-direction: column; align-items: flex-start; }
 }
+
+/* Footer is always dark, so keep the logo light in BOTH themes (beats the light-mode .logo rules) */
+:root .siteFooter .footerBrand .logo,
+:root[data-theme="light"] .siteFooter .footerBrand .logo { color: #ffffff; }
+:root .siteFooter .footerBrand .logo>span:last-child>span,
+:root[data-theme="light"] .siteFooter .footerBrand .logo>span:last-child>span { color: #a49bff; }
