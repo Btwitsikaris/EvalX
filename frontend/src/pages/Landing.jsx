@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ShieldCheck, UploadCloud, BrainCircuit, FileCheck2,
+  ShieldCheck, Menu, X, UploadCloud, BrainCircuit, FileCheck2,
   GraduationCap, ChevronRight, CheckCircle2
 } from "lucide-react";
 import Logo from "../components/Logo";
@@ -61,6 +61,9 @@ function HeroSheet() {
 }
 
 export default function Landing() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="landing">
       <header className="landingNav">
@@ -73,6 +76,25 @@ export default function Landing() {
         <div className="navButtons">
           <Link className="btn btnLight" to="/student/login">Student Login</Link>
           <Link className="btn btnPrimary" to="/teacher/login">
+            Teacher Portal <ChevronRight size={16} />
+          </Link>
+        </div>
+        <button
+          type="button"
+          className="navMenuButton"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(o => !o)}
+        >
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        <div className={menuOpen ? "mobileMenu open" : "mobileMenu"}>
+          <a href="#features" onClick={closeMenu}>Features</a>
+          <a href="#workflow" onClick={closeMenu}>Workflow</a>
+          <Link to="/admin/login" onClick={closeMenu}>Admin</Link>
+          <Link to="/student/login" onClick={closeMenu}>Student Login</Link>
+          <Link className="btn btnPrimary" to="/teacher/login" onClick={closeMenu}>
             Teacher Portal <ChevronRight size={16} />
           </Link>
         </div>
