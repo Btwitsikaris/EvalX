@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import torch
@@ -5,51 +6,33 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 # ---------------------------------------------------------
-# Model configuration
+# Model source
 # ---------------------------------------------------------
-# The model has already been downloaded locally using:
+# Local development: if ./models/Qwen3-1.7B exists (downloaded with
+#   hf download Qwen/Qwen3-1.7B --local-dir ./models/Qwen3-1.7B )
+# it is used and nothing is downloaded.
 #
-# hf download Qwen/Qwen3-1.7B --local-dir ./models/Qwen3-1.7B
-#
-# We therefore load it from disk instead of downloading it
-# every time the service starts.
+# Deployment (Docker / Hugging Face Space): there is no local folder,
+# so the model is loaded from the Hugging Face cache. The Dockerfile
+# downloads it at build time, so startup stays fast.
 # ---------------------------------------------------------
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "Qwen3-1.7B"
+LOCAL_MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "Qwen3-1.7B"
+USE_LOCAL = LOCAL_MODEL_PATH.exists()
+MODEL_SOURCE = str(LOCAL_MODEL_PATH) if USE_LOCAL else os.getenv("QWEN_MODEL_ID", "Qwen/Qwen3-1.7B")
 
-
-# ---------------------------------------------------------
-# Load tokenizer once
-# ---------------------------------------------------------
-# Loading the tokenizer for every request would be wasteful.
-# We load it when this module is initialized and reuse it.
-# ---------------------------------------------------------
+print(f"[qwen] loading model from: {MODEL_SOURCE} (local={USE_LOCAL}) | cuda={torch.cuda.is_available()}")
 
 tokenizer = AutoTokenizer.from_pretrained(
-    MODEL_PATH,
-    local_files_only=True
+    MODEL_SOURCE,
+    local_files_only=USE_LOCAL
 )
 
-
-# ---------------------------------------------------------
-# Load Qwen once
-# ---------------------------------------------------------
-# device_map="auto":
-#   Lets Accelerate decide where model parameters should
-#   live based on the available hardware.
-#
-# dtype="auto":
-#   Uses the appropriate data type for the model/device.
-#
-# local_files_only=True:
-#   Prevents accidental downloads from Hugging Face.
-# ---------------------------------------------------------
-
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
+    MODEL_SOURCE,
     dtype="auto",
     device_map="auto",
-    local_files_only=True
+    local_files_only=USE_LOCAL
 )
 
 model.eval()
@@ -66,8 +49,6 @@ def generate_response(
     Its only responsibility is model inference.
     """
 
-    # Qwen uses a chat format, so wrap our evaluator prompt
-    # as a user message.
     messages = [
         {
             "role": "user",
@@ -75,8 +56,6 @@ def generate_response(
         }
     ]
 
-    # Convert the chat messages into the format expected
-    # by the Qwen tokenizer.
     text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
@@ -84,13 +63,11 @@ def generate_response(
         enable_thinking=False
     )
 
-    # Convert the prompt into tensors.
     inputs = tokenizer(
         [text],
         return_tensors="pt"
     ).to(model.device)
 
-    # Generate the model response.
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
@@ -98,14 +75,9 @@ def generate_response(
             do_sample=False
         )
 
-    # The generated sequence contains both:
-    #
-    #   original prompt + generated response
-    #
-    # We only want the newly generated tokens.
+    # keep only the newly generated tokens
     generated_tokens = outputs[0][inputs.input_ids.shape[-1]:]
 
-    # Convert tokens back into normal text.
     response = tokenizer.decode(
         generated_tokens,
         skip_special_tokens=True
