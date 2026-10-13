@@ -661,3 +661,39 @@ body { transition: background .3s ease, color .3s ease; }
 @media (max-width: 760px) {
   .footerContact { min-width: 0; }
 }
+
+/* ===== Mobile landing menu (restores links hidden at <=760px) ===== */
+.navMenuButton, .mobileMenu { display: none; }
+
+@media (max-width: 760px) {
+  .landingNav { padding-right: 78px; gap: 10px; }
+  /* Teacher Portal stays visible in the bar; compact it so it fits */
+  .navButtons { margin-left: auto; }
+  .navButtons .btnPrimary { padding: 9px 12px; font-size: 13px; white-space: nowrap; }
+
+  .navMenuButton {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; flex: none; cursor: pointer;
+    border-radius: 11px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text);
+  }
+  .mobileMenu {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 4px; padding: 12px 18px 18px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  }
+  .mobileMenu.open { display: flex; }
+  .mobileMenu a:not(.btn) {
+    padding: 13px 12px; border-radius: 10px; color: var(--text);
+    font-weight: 650; font-size: 15px;
+  }
+  .mobileMenu a:not(.btn):hover { background: var(--surface-2); color: var(--purple); }
+  .mobileMenu .btn { margin-top: 8px; min-height: 46px; }
+}
+
+/* Very small phones: hide the duplicate Teacher button from the bar (it's in the menu) */
+@media (max-width: 400px) {
+  .navButtons { display: none; }
+  .navMenuButton { margin-left: auto; }
+}
