@@ -1,5 +1,5 @@
 import React from "react";
-import { Mail, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Logo from "./Logo";
 
 export default function Footer() {
@@ -7,9 +7,7 @@ export default function Footer() {
     <footer className="siteFooter" id="about">
       <div className="footerTop">
         <div className="footerBrand">
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Logo />
-          </div>
+          <Logo />
           <p>
             AI-powered evaluation for handwritten answer sheets — OCR
             extraction, automated scoring, and transparent feedback for
@@ -19,19 +17,22 @@ export default function Footer() {
 
         <div className="footerCol footerContact">
           <h4>Contact</h4>
-          <span className="footerName">Aniket</span>
+          <p className="footerName">
+            Designed by <strong>Aniket Majumdar</strong>
+          </p>
           <a href="mailto:aniketmajumdar2006@gmail.com" className="footerEmail">
-            <Mail size={13} aria-hidden="true" />
-            <span>aniketmajumdar2006@gmail.com</span>
+            aniketmajumdar2006@gmail.com
           </a>
+          <p className="footerNote">for questions, bugs, or feedback</p>
         </div>
       </div>
 
       <div className="footerBottom">
-        <div className="stack">
-          <Sparkles size={12} style={{ verticalAlign: "-2px", marginRight: 5 }} />
+        <span className="copyright">© {new Date().getFullYear()} EvalX</span>
+        <span className="stack">
+          <Sparkles size={12} aria-hidden="true" />
           Built with React · Node.js · Express · MongoDB · PaddleOCR · Qwen · TrOCR · Python
-        </div>
+        </span>
       </div>
     </footer>
   );
