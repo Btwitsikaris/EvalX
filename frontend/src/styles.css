@@ -697,3 +697,13 @@ body { transition: background .3s ease, color .3s ease; }
   .navButtons { display: none; }
   .navMenuButton { margin-left: auto; }
 }
+
+/* Fix: keep the nav (and its mobile dropdown) above hero content */
+.landingNav { z-index: 50; }
+@media (max-width: 760px) {
+  .mobileMenu {
+    z-index: 60;
+    background: var(--surface-2);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+}
