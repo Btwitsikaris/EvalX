@@ -21,7 +21,13 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
 app.use(cors({
   origin: (origin, callback) => {
     // no Origin header = curl / health checks / server-to-server
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
     callback(new Error(`CORS blocked origin: ${origin}`));
   }
 }));
